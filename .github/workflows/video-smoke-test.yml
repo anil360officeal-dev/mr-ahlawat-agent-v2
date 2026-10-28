@@ -1,0 +1,40 @@
+name: Video Render Smoke Test (Manual Only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: video-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render-and-validate:
+    name: Render a real MP4 and validate it
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Confirm FFmpeg and FFprobe
+        run: |
+          ffmpeg -version
+          ffprobe -version
+      - name: Render and validate MP4
+        run: node scripts/video-smoke-test.js artifacts/mr-ahlawat-smoke-test.mp4
+      - name: Upload test MP4 artifact (not YouTube)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mr-ahlawat-real-mp4-smoke-test
+          path: artifacts/mr-ahlawat-smoke-test.mp4
+          if-no-files-found: error
+          retention-days: 7
