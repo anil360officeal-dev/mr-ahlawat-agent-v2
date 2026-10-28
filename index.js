@@ -135,17 +135,23 @@ class YouTubeAutomationAgent {
       // Setup API endpoints
       this.setupAPI();
       
-      // Initialize scheduler
-      this.logger.info('Setting up automation scheduler...');
-      this.scheduler = new DailyAutomation(this.agents, this.db, {
-        generateContent: input => this.queueScheduledContent(input),
-        engagement: this.engagement,
-        experiments: this.experiments
-      });
-      await this.scheduler.initialize();
+      // Scheduler is opt-in. Never start recurring generation/publishing by default.
+      // Enable only after the owner has reviewed configuration and explicitly opts in.
+      if (process.env.ENABLE_AUTOMATION_SCHEDULER === 'true') {
+        this.logger.warn('ENABLE_AUTOMATION_SCHEDULER=true: initializing scheduled automation');
+        this.scheduler = new DailyAutomation(this.agents, this.db, {
+          generateContent: input => this.queueScheduledContent(input),
+          engagement: this.engagement,
+          experiments: this.experiments
+        });
+        await this.scheduler.initialize();
 
-      if (await this.db.getSetting('automation_paused') === 'true') {
-        await this.scheduler.pauseAutomation();
+        if (await this.db.getSetting('automation_paused') === 'true') {
+          await this.scheduler.pauseAutomation();
+        }
+      } else {
+        this.scheduler = null;
+        this.logger.info('Scheduler is disabled by default; set ENABLE_AUTOMATION_SCHEDULER=true only after review');
       }
       
       this.isInitialized = true;
