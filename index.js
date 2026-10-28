@@ -1872,8 +1872,10 @@ class YouTubeAutomationAgent {
       console.log(chalk.gray('─'.repeat(50)));
       if (this.setupRequired) {
         console.log(chalk.yellow('\n⚙️  Setup is required. The dashboard is available; run npm run walkthrough to enable generation.'));
+      } else if (process.env.ENABLE_AUTOMATION_SCHEDULER === 'true') {
+        console.log(chalk.yellow('\n🤖 Scheduler enabled. Review generated content and publishing settings before use.'));
       } else {
-        console.log(chalk.yellow('\n🤖 Automation is active. Approved content will be published on schedule.'));
+        console.log(chalk.green('\n🛡️ Safe mode: dashboard is available; recurring automation is disabled by default.'));
       }
     });
   }
