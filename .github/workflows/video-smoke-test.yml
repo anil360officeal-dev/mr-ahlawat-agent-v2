@@ -25,6 +25,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Install FFmpeg and FFprobe
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ffmpeg
       - name: Confirm FFmpeg and FFprobe
         run: |
           ffmpeg -version
